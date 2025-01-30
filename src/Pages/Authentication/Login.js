@@ -1,26 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { userLogin, clearError } from "../../Slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 function Login() {
-  const [credentials, setCredentials] = useState({ username: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-
+  const [errorLog, setErrorLog] = useState([]);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const authState = useSelector((state) => state?.authSlice ?? {});
+  const { error } = authState;
+  
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
 
   const handleChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (credentials.username === "admin" && credentials.password === "1234") {
-      localStorage.setItem("authenticated", "true");
-      navigate("/home");
-    } else {
-      alert("Invalid credentials");
+    const data = { ...formData };
+    dispatch(userLogin({ data, navigate }));
+  };
+
+  useEffect(() => {
+    if (error) {
+      setErrorLog(error);
+      setTimeout(() => {
+        setErrorLog([]);
+      }, 2000);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
+  // Handle form submission on pressing Enter
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSubmit(e);
     }
   };
 
@@ -40,15 +67,21 @@ function Login() {
               </h1>
               <form onSubmit={handleSubmit}>
                 <label className="block text-sm">
-                  <span className="text-gray-700 dark:text-gray-400">Username</span>
+                  <span className="text-gray-700 dark:text-gray-400">Email</span>
                   <input
                     className="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                    placeholder="Enter your username"
-                    type="text"
-                    name="username"
-                    value={credentials.username}
+                    placeholder="abc@email.com"
+                    name="email"
                     onChange={handleChange}
                   />
+                  {(errorLog.key === "user" || errorLog.key === "email") && (
+                    <p
+                      className="mt-2 text-xs text-red-500"
+                      style={{ color: "red" }}
+                    >
+                      {errorLog.message}
+                    </p>
+                  )}
                 </label>
 
                 <label className="block mt-4 text-sm">
@@ -59,7 +92,6 @@ function Login() {
                       placeholder="*************"
                       type={showPassword ? "text" : "password"}
                       name="password"
-                      value={credentials.password}
                       onChange={handleChange}
                     />
                     <button
@@ -91,11 +123,20 @@ function Login() {
                       )}
                     </button>
                   </div>
+                  {errorLog.key === "password" && (
+                    <p
+                      className="mt-2 text-xs text-red-500"
+                      style={{ color: "red" }}
+                    >
+                      {errorLog.message}
+                    </p>
+                  )}
                 </label>
 
                 <button
                   type="submit"
                   className="block w-full px-4 py-2 mt-4 text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+                  onClick={handleSubmit}
                 >
                   Log In
                 </button>

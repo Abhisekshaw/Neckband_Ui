@@ -58,7 +58,7 @@ const Dashboard = () => {
       <Leftmenu />
 
       {/* Main Content */}
-      <div className="flex-1 p-4 bg-gray-50 overflow-hidden sm:p-6"> {/* Adjust padding for smaller screens */}
+      <div className="flex-1 p-4 bg-gray-50 overflow-auto sm:p-6"> {/* Adjust padding for smaller screens */}
         {/* Header */}
         <div className="bg-white p-4 shadow-sm rounded-md">
           <div className="flex justify-end items-center space-x-4">
