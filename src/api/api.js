@@ -10,5 +10,5 @@ export const LOGIN = (data) => api.post("/api/auth/login", data);
 
 //Device Data
 export const ADDDEVICE = (data, header) => api.post("/api/device/add", data, header);
-export const GETDEVICE = (data, header) => api.post("/api/device/get", data, header);
-export const DEVICEANDANIMAL = (data, header) => api.post("/api/device/deviceandanimal", data, header);
+export const GETDEVICE = (data, header) => api.post("/api/devices/get", data, header);
+export const DEVICEANDANIMAL = (data, header) => api.post("/api/dash/deviceandanimal", data, header);

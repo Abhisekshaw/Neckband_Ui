@@ -21,42 +21,23 @@ export const GetDevice = createAsyncThunk(
     }
 );
 
-export const DeviceAndAnimal = createAsyncThunk(
-    'DeviceAndAnimal',
-    async ({ data, header }, { rejectWithValue }) => {
-        try {
-            const response = await DEVICEANDANIMAL(data, header);
-            return response.data;
-        } catch (error) {
-            if (
-                error.response.data.message === 'Invalid token' ||
-                error.response.data.message === 'Access denied'
-            ) {
-                window.localStorage.clear();
-                window.location.href = './';
-            }
-            return rejectWithValue(error.response.data);
-        }
-    }
-);
-
-// EnergyMeter Slice
+// Device Slice
 export const DeviceSlice = createSlice({
     name: 'deviceSlice',
     initialState: {
         status: "",
-        loading: false,
+        device_loading: false,
 
-        response: "",
-        error: null,
+        device_response: "",
+        device_error: null,
 
     },
     reducers: {
         clearError: (state) => {
-            state.error = null;
+            state.device_error = null;
         },
         clearResponse: (state) => {
-            state.response = "";
+            state.device_response = "";
         },
     },
     extraReducers: (builder) => {
@@ -64,35 +45,18 @@ export const DeviceSlice = createSlice({
             //Get Dveice
             .addCase(GetDevice.pending, (state) => {
                 state.status = "Loading...";
-                state.loading = true;
+                state.device_loading = true;
             })
             .addCase(GetDevice.fulfilled, (state, { payload }) => {
                 state.status = "Success";
-                state.loading = false;
-                state.response = payload;
-                state.bypass_error = null;
+                state.device_loading = false;
+                state.device_response = payload;
+                state.device_error = null;
             })
             .addCase(GetDevice.rejected, (state, { payload }) => {
                 state.status = "Failed";
-                state.loading = false;
-                state.error = payload;
-            })
-
-            //Device and Animal
-            .addCase(DeviceAndAnimal.pending, (state) => {
-                state.status = "Loading...";
-                state.loading = true;
-            })
-            .addCase(DeviceAndAnimal.fulfilled, (state, { payload }) => {
-                state.status = "Success";
-                state.loading = false;
-                state.response = payload;
-                state.bypass_error = null;
-            })
-            .addCase(DeviceAndAnimal.rejected, (state, { payload }) => {
-                state.status = "Failed";
-                state.loading = false;
-                state.error = payload;
+                state.device_loading = false;
+                state.device_error = payload;
             })
     },
 });

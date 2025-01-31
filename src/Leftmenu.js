@@ -38,7 +38,7 @@ function Leftmenu({ isSideMenuOpen }) {
             <li className="relative px-6 py-3" onClick={() => handleItemClick("CurrentReport")}>
               <Link
                 className="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
-                to="/current-report"
+                to="/home"
               >
                 {renderSpanForItem("CurrentReport")}
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -50,7 +50,7 @@ function Leftmenu({ isSideMenuOpen }) {
             <li className="relative px-6 py-3" onClick={() => handleItemClick("PreviousReport")}>
               <Link
                 className="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
-                to="/previous-report"
+                to="/home"
               >
                 {renderSpanForItem("PreviousReport")}
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
