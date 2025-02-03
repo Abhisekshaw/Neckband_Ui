@@ -9,7 +9,7 @@ import $ from "jquery";
 import "bootstrap-daterangepicker/daterangepicker.css";
 import moment from "moment";
 import "bootstrap-daterangepicker";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -57,9 +57,9 @@ const Dashboard = () => {
     title: { text: "" },
     xAxis: { categories: [] },
     credits: {
-      enabled: false, // Disable the watermark
+      enabled: false, 
     },
-    series: [{ name: "No Data", data: [] }], // Default empty graph
+    series: [{ name: "No Data", data: [] }], 
   });
 
   const handleCheckboxChange = (metric) => {
@@ -70,73 +70,56 @@ const Dashboard = () => {
   };
 
   const handleApply = () => {
+    // Validation for required fields
+    if (!selectedDevice || !selectedAnimal || !startDate || !endDate) {
+      setError("Please select all the fields.");
+      setTimeout(() => setError(""), 5000); 
+      return;
+    }
+  
     const data = {
       Device: selectedDevice,
       animal_type: selectedAnimal,
       startdate: startDate,
       enddate: endDate,
     };
-
+  
     // Dispatch the GetDevice action with filters
     dispatch(GetDevice({ data, header })).then((response) => {
       const fetchedData = response.payload.data;
-
+  
       if (fetchedData && fetchedData.length > 0) {
-        // const times = fetchedData.map((entry) => entry.realtime);
-        const times = fetchedData.map((entry) => moment.utc(entry.createdAt).format("YYYY-MM-DD hh:mm A"));
+        const times = fetchedData.map((entry) =>
+          moment(entry.createdAt).format("YYYY-MM-DD hh:mm A")
+        );
         const SPO2Data = fetchedData.map((entry) => entry.spO2);
         const BPMData = fetchedData.map((entry) => entry.bpm);
         const IrtempData = fetchedData.map((entry) => entry.irtemp);
-
-        // Map the fetched data to the Highcharts format
-        setChartOptions((prev) => ({
-          ...prev,
-          xAxis: {
-            categories: times, // Map time to the x-axis
-          },
-          series: [
-            selectedMetrics.SPO2 && {
-              name: "SPO2",
-              data: SPO2Data,
-              color: "blue",
-            },
-            selectedMetrics.BPM && {
-              name: "BPM",
-              data: BPMData,
-              color: "green",
-            },
-            selectedMetrics.TEMP && {
-              name: "Irtemp",
-              data: IrtempData,
-              color: "red",
-            },
-          ].filter(Boolean), // Remove empty series if metrics are not selected
-        }));
-
+  
+        // Check if at least one metric is selected
+        const selectedSeries = [
+          selectedMetrics.SPO2 && { name: "SPO2", data: SPO2Data, color: "blue" },
+          selectedMetrics.BPM && { name: "BPM", data: BPMData, color: "green" },
+          selectedMetrics.TEMP && { name: "Irtemp", data: IrtempData, color: "red" },
+        ].filter(Boolean);
+  
+        if (selectedSeries.length === 0) {
+          setError("Please check at least one checkbox to see the graph!");
+          setTimeout(() => setError(""), 5000); 
+        }
+  
+        setChartOptions({
+          xAxis: { categories: times },
+          series: selectedSeries.length > 0 ? selectedSeries : [{ name: "No Data", data: [] }],
+        });
+  
         setTableData(fetchedData);
       } else {
         setTableData([]);
       }
     });
-
-    // const selectedSeries = graphData
-    //   .filter((series) => selectedMetrics[series.name])
-    //   .map((series) => ({ ...series })); // Deep copy to prevent reference issues
-
-    // if (selectedSeries.length === 0) {
-    //   setError("Please check at least one checkbox to see the graph.");
-    //   setChartOptions((prev) => ({
-    //     ...prev,
-    //     series: [{ name: "No Data", data: [] }], // Keep graph but no data
-    //   }));
-    // } else {
-    //   setError("");
-    //   setChartOptions((prev) => ({
-    //     ...prev,
-    //     series: selectedSeries, // Update graph with selected metrics
-    //   }));
-    // }
   };
+  
   // const [startDate, setStartDate] = useState(moment().startOf("day").format("M/DD/YYYY hh:mm:ss A"));
   // const [endDate, setEndDate] = useState(moment().endOf("day").format("M/DD/YYYY hh:mm:ss A"));
 
@@ -174,11 +157,10 @@ const Dashboard = () => {
       }
     };
   }, []);
-    // Handle logout
-    const handleLogout = () => {
-      window.localStorage.removeItem("token"); // Remove the token
-      navigate("/"); // Redirect to the login page
-    };
+  const handleLogout = () => {
+    window.localStorage.removeItem("token"); 
+    navigate("/"); 
+  };
 
   return (
     <div className="flex h-screen">
@@ -202,74 +184,80 @@ const Dashboard = () => {
 
         {/* Graph Section */}
         <div className="bg-white p-4 mt-4 shadow-sm rounded-md">
-          {/* Wrap All Inputs in a Single Line */}
+        {error && <p className="text-red-500">{error}</p>}
           <div className="flex items-center space-x-4 overflow-x-auto flex-wrap sm:flex-nowrap">
-            {/* Device Dropdown */}
-            <select
-              className="border p-2 rounded-md h-10 w-48"
-              value={selectedDevice}
-              onChange={(e) => {
-                setSelectedDevice(e.target.value);
-                setSelectedAnimal("");
-              }}
-            >
-              <option value="">Select Device</option>
-              {response?.data?.map((device) => (
-                <option key={device._id} value={device._id}>
-                  {device._id}
-                </option>
-              ))}
-            </select>
+            <label className="block text-sm font-medium text-gray-700">
+              Device <span style={{ color: "red" }}>*</span>
+              <select
+                className="block w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none"
+                value={selectedDevice}
+                onChange={(e) => {
+                  setSelectedDevice(e.target.value);
+                  setSelectedAnimal("");
+                }}
+              >
+                <option value="">Select Device</option>
+                {response?.data?.map((device) => (
+                  <option key={device._id} value={device._id}>
+                    {device._id}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-            {/* Animal Dropdown */}
-            <select
-              className="border p-2 rounded-md h-10 w-48"
-              value={selectedAnimal}
-              onChange={(e) => setSelectedAnimal(e.target.value)}
-              disabled={!selectedDevice}
-            >
-              <option value="">Select Animal</option>
-              {filteredAnimal.map((animal, index) => (
-                <option key={index} value={animal}>
-                  {animal}
-                </option>
-              ))}
-            </select>
+            <label className="block text-sm font-medium text-gray-700">
+              Animal Type <span style={{ color: "red" }}>*</span>
+              <select
+                className="block w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none"
+                value={selectedAnimal}
+                onChange={(e) => setSelectedAnimal(e.target.value)}
+                disabled={!selectedDevice}
+              >
+                <option value="">Select Animal</option>
+                {filteredAnimal.map((animal, index) => (
+                  <option key={index} value={animal}>
+                    {animal}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-            {/* Date Range Picker */}
-            <input
-              ref={dateRangePickerRef}
-              className="border p-2 rounded-md h-10 w-48"
-              placeholder="Select Date Range"
-            />
+            <label className="block text-sm font-medium text-gray-700">
+              Date Range <span style={{ color: "red" }}>*</span>
+              <input
+                ref={dateRangePickerRef}
+                className="block w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none"
+                placeholder="Select Date Range"
+              />
+            </label>
 
-            {/* Checkbox Section */}
-            <div className="flex space-x-4">
+            <div className="flex flex-wrap mt-6 gap-4">
               {Object.keys(selectedMetrics).map((metric) => (
-                <label key={metric} className="flex items-center space-x-1">
+                <label
+                  key={metric}
+                  className="flex items-center space-x-2 text-sm font-medium text-gray-700"
+                >
                   <input
                     type="checkbox"
                     className="w-5 h-5"
                     checked={selectedMetrics[metric]}
                     onChange={() => handleCheckboxChange(metric)}
                   />
-                  <span className="text-sm">{metric}</span>
+                  <span>{metric}</span>
                 </label>
               ))}
             </div>
 
-            {/* Apply Button (Reduced Height) */}
             <button
               onClick={handleApply}
-              className="bg-green-500 text-white px-4 py-1 rounded-md h-8"
+              className="bg-green-500 text-white mt-4 px-4 py-1 rounded-md h-8"
             >
               Apply
             </button>
           </div>
-
-          {error && <p className="text-red-500">{error}</p>}
+          
           <div className="mt-8">
-          <h2 className="font-bold mt-6 mb-2">GRAPH</h2>
+            <h2 className="font-bold mt-6 mb-2">GRAPH</h2>
             <HighchartsReact highcharts={Highcharts} options={chartOptions} />
           </div>
         </div>
@@ -318,7 +306,9 @@ const Dashboard = () => {
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="border p-2">{row.Device}</td>
                     <td className="border p-2">{row.animal_type}</td>
-                    <td className="border p-2">{row.realtime}</td>
+                    <td className="border p-2">
+                      {moment(row.createdAt).format("YYYY-MM-DD hh:mm A")}
+                    </td>
                     <td className="border p-2">{row.irtemp}</td>
                     <td className="border p-2">{row.bpm}</td>
                     <td className="border p-2">{row.spO2}</td>
