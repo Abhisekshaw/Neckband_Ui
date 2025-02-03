@@ -15,7 +15,7 @@ function Superadmin() {
         <Route path="/left" element={<Leftmenu />} />
 
         {/* Protected Routes */}
-        <Route >
+        <Route element={<ProtectedRoute />}>
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/home" element={<Dashboard />} />
         </Route>

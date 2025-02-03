@@ -1,9 +1,12 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Navigate, Outlet } from "react-router-dom";
 
-function ProtectedRoute({ children }) {
-  const isAuthenticated = localStorage.getItem("authenticated");
-  return isAuthenticated ? children : <Navigate to="/l" />;
+function ProtectedRoute() {
+  const token = useSelector((state) => state.auth.token); // Access token from Redux store
+
+  if (!token) {
+    return <Navigate to="/" />;
+  }
+
+  return <Outlet />;
 }
-
-export default ProtectedRoute;

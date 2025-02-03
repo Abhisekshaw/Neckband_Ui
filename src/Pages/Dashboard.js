@@ -9,6 +9,7 @@ import $ from "jquery";
 import "bootstrap-daterangepicker/daterangepicker.css";
 import moment from "moment";
 import "bootstrap-daterangepicker";
+import { useNavigate } from "react-router-dom"; 
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -24,6 +25,7 @@ const Dashboard = () => {
   });
   const [error, setError] = useState("");
   const [tableData, setTableData] = useState([]);
+  const navigate = useNavigate();
 
   // Fetch device and animal data from Redux state
   const { response, loading, dash_error } = useSelector(
@@ -36,20 +38,20 @@ const Dashboard = () => {
       state.deviceSlice || { device_response: "", device_loading: false }
   );
 
+  const header = {
+    headers: {
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+    },
+  };
+
   useEffect(() => {
-    dispatch(DeviceAndAnimal({ data: {}, header: {} }));
+    dispatch(DeviceAndAnimal({ data: {}, header }));
   }, [dispatch]);
 
   // Get filtered animal types based on the selected device
   const filteredAnimal =
     response?.data?.find((device) => device._id === selectedDevice)
       ?.animal_type || [];
-
-  const header = {
-    headers: {
-      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
-    },
-  };
 
   const [chartOptions, setChartOptions] = useState({
     title: { text: "" },
@@ -172,6 +174,11 @@ const Dashboard = () => {
       }
     };
   }, []);
+    // Handle logout
+    const handleLogout = () => {
+      window.localStorage.removeItem("token"); // Remove the token
+      navigate("/"); // Redirect to the login page
+    };
 
   return (
     <div className="flex h-screen">
@@ -184,6 +191,12 @@ const Dashboard = () => {
           <div className="flex justify-end items-center space-x-4">
             <span className="text-gray-600">🔔</span>
             <span className="text-gray-600">Admin ▼</span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-4 py-1 rounded-md"
+            >
+              Logout
+            </button>
           </div>
         </div>
 
